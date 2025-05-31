@@ -5,12 +5,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>My Game Level Accomplishments</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; }
-    .level { background: #fff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; overflow: hidden; display: flex; }
-    .thumbnail { width: 150px; height: 150px; object-fit: cover; }
-    .details { padding: 15px; flex: 1; }
-    .details h2 { margin-top: 0; }
-    .details p { margin: 5px 0; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f4f4f4;
+    }
+    .level {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: row;
+    }
+    .thumbnail {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+    }
+    .details {
+      padding: 15px;
+      flex: 1;
+    }
+    .details h2 {
+      margin-top: 0;
+    }
+    .details p {
+      margin: 5px 0;
+    }
   </style>
 </head>
 <body>
@@ -38,30 +61,30 @@
           levelDiv.className = 'level';
 
           const img = document.createElement('img');
-          img.src = data[18]; // Column T: Thumbnail Image URL
-          img.alt = data[2]; // Column D: Level Name
+          img.src = data[19]; // Column T: Thumbnail Image URL
+          img.alt = data[3];  // Column D: Level Name
           img.className = 'thumbnail';
 
           const detailsDiv = document.createElement('div');
           detailsDiv.className = 'details';
           detailsDiv.innerHTML = `
-            <h2>#${data[0]} - ${data[2]}</h2>
-            <p><strong>Creator:</strong> ${data[3]}</p>
-            <p><strong>PGDDL:</strong> ${data[4]}</p>
-            <p><strong>GDDL:</strong> ${data[5]}</p>
-            <p><strong>PEMON:</strong> ${data[6]}</p>
-            <p><strong>Date Beat:</strong> ${data[7]}</p>
-            <p><strong>Enjoyment:</strong> ${data[8]}</p>
-            <p><strong>Level Opinion Rank:</strong> ${data[9]}</p>
-            <p><strong>Attempt Count:</strong> ${data[10]}</p>
-            <p><strong>Worst Fail:</strong> ${data[11]}</p>
-            <p><strong>Gameplay Opinion Score:</strong> ${data[12]}</p>
-            <p><strong>Deco Opinion Score:</strong> ${data[13]}</p>
-            <p><strong>Song Opinion Score:</strong> ${data[14]}</p>
-            <p><strong>Classic Mode:</strong> ${data[15]}</p>
-            <p><strong>Platformer Mode:</strong> ${data[16]}</p>
-            <p><strong>Order Beaten:</strong> ${data[17]}</p>
-            <p><strong>Level ID:</strong> ${data[19]}</p>
+            <h2>#${data[1]} - ${data[3]}</h2>
+            <p><strong>Creator:</strong> ${data[4]}</p>
+            <p><strong>PGDDL:</strong> ${data[5]}</p>
+            <p><strong>GDDL:</strong> ${data[6]}</p>
+            <p><strong>PEMON:</strong> ${data[7]}</p>
+            <p><strong>Date Beat:</strong> ${data[8]}</p>
+            <p><strong>Enjoyment:</strong> ${data[9]}</p>
+            <p><strong>Level Opinion Rank:</strong> ${data[10]}</p>
+            <p><strong>Attempt Count:</strong> ${data[11]}</p>
+            <p><strong>Worst Fail:</strong> ${data[12]}</p>
+            <p><strong>Gameplay Opinion Score:</strong> ${data[13]}</p>
+            <p><strong>Deco Opinion Score:</strong> ${data[14]}</p>
+            <p><strong>Song Opinion Score:</strong> ${data[15]}</p>
+            <p><strong>Classic Mode:</strong> ${data[16]}</p>
+            <p><strong>Platformer Mode:</strong> ${data[17]}</p>
+            <p><strong>Order Beaten:</strong> ${data[18]}</p>
+            <p><strong>Level ID:</strong> ${data[20]}</p>
           `;
 
           levelDiv.appendChild(img);
