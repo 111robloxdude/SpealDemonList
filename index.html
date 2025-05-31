@@ -376,7 +376,7 @@
 
     async function fetchLevels() {
       const sheetId = '1jyql2Wzlho2N6cU7Ja45bCXgmeT_CdQM2gddff8wfzM';
-      const sheetName = 'Sheet1'; // Change if your levels sheet is named differently
+      const sheetName = 'The Sheet'; // Change if your levels sheet is named differently
       const query = encodeURIComponent('SELECT * OFFSET 1'); // skip header row
       const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}&tq=${query}`;
 
