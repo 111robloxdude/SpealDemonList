@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Game Level Accomplishments</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; }
+    .level { background: #fff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; overflow: hidden; display: flex; }
+    .thumbnail { width: 150px; height: 150px; object-fit: cover; }
+    .details { padding: 15px; flex: 1; }
+    .details h2 { margin-top: 0; }
+    .details p { margin: 5px 0; }
+  </style>
+</head>
+<body>
+  <h1>My Game Level Accomplishments</h1>
+  <div id="levels"></div>
+
+  <script>
+    async function fetchData() {
+      const sheetId = '1jyql2Wzlho2N6cU7Ja45bCXgmeT_CdQM2gddff8wfzM'; // Replace with your actual Google Sheet ID
+      const sheetName = 'The Sheet'; // Replace with your actual sheet name
+      const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+
+      try {
+        const response = await fetch(url);
+        const text = await response.text();
+        const json = JSON.parse(text.substring(47).slice(0, -2));
+        const rows = json.table.rows;
+
+        const levelsContainer = document.getElementById('levels');
+        rows.forEach(row => {
+          const data = row.c.map(cell => (cell ? cell.v : ''));
+
+          const levelDiv = document.createElement('div');
+          levelDiv.className = 'level';
+
+          const img = document.createElement('img');
+          img.src = data[18]; // Column T: Thumbnail Image URL
+          img.alt = data[2]; // Column D: Level Name
+          img.className = 'thumbnail';
+
+          const detailsDiv = document.createElement('div');
+          detailsDiv.className = 'details';
+          detailsDiv.innerHTML = `
+            <h2>#${data[0]} - ${data[2]}</h2>
+            <p><strong>Creator:</strong> ${data[3]}</p>
+            <p><strong>PGDDL:</strong> ${data[4]}</p>
+            <p><strong>GDDL:</strong> ${data[5]}</p>
+            <p><strong>PEMON:</strong> ${data[6]}</p>
+            <p><strong>Date Beat:</strong> ${data[7]}</p>
+            <p><strong>Enjoyment:</strong> ${data[8]}</p>
+            <p><strong>Level Opinion Rank:</strong> ${data[9]}</p>
+            <p><strong>Attempt Count:</strong> ${data[10]}</p>
+            <p><strong>Worst Fail:</strong> ${data[11]}</p>
+            <p><strong>Gameplay Opinion Score:</strong> ${data[12]}</p>
+            <p><strong>Deco Opinion Score:</strong> ${data[13]}</p>
+            <p><strong>Song Opinion Score:</strong> ${data[14]}</p>
+            <p><strong>Classic Mode:</strong> ${data[15]}</p>
+            <p><strong>Platformer Mode:</strong> ${data[16]}</p>
+            <p><strong>Order Beaten:</strong> ${data[17]}</p>
+            <p><strong>Level ID:</strong> ${data[19]}</p>
+          `;
+
+          levelDiv.appendChild(img);
+          levelDiv.appendChild(detailsDiv);
+          levelsContainer.appendChild(levelDiv);
+        });
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    }
+
+    fetchData();
+  </script>
+</body>
+</html>
