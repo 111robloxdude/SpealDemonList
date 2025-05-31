@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Level List with Sorting Tabs</title>
+  <title>Level List with Sorting Tabs & Changelog</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -46,6 +46,10 @@
     #levels {
       /* container for levels */
     }
+    #changelog {
+      /* container for changelog */
+    }
+    /* Levels styling */
     .level {
       background: #fff;
       border-radius: 8px;
@@ -138,19 +142,54 @@
       font-weight: bold;
       font-size: 1.1em;
     }
+
+    /* Changelog tables */
+    #changelog h3 {
+      margin-top: 30px;
+      margin-bottom: 10px;
+      color: #3a5a63;
+      border-bottom: 2px solid #7aaeb4;
+      padding-bottom: 3px;
+    }
+    #changelog table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      font-size: 14px;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    #changelog thead {
+      background-color: #7aaeb4;
+      color: white;
+    }
+    #changelog th, #changelog td {
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+    #changelog td:nth-child(1),
+    #changelog td:nth-child(4),
+    #changelog td:nth-child(5) {
+      text-align: center;
+    }
   </style>
 </head>
 <body>
   <div id="container">
     <div id="tabs">
       <div class="tab active" data-sort="rank">Rank</div>
-      <div class="tab" data-sort="enjoyment">Enjoyment</div>
-      <div class="tab" data-sort="order">Order Beaten</div>
       <div class="tab" data-sort="gddl">GDDL</div>
       <div class="tab" data-sort="pemon">PEMON</div>
+      <div class="tab" data-sort="order">Order Beaten</div>
+      <div class="tab" data-sort="enjoyment">Enjoyment</div>
       <div class="tab" data-sort="worstfail">Worst Fail</div>
+      <div class="tab" data-sort="changelog">Changelog</div>
     </div>
     <div id="levels"></div>
+    <div id="changelog" style="display:none;"></div>
   </div>
 
   <script>
@@ -285,64 +324,60 @@
       return isNaN(num) ? null : num;
     }
 
+    function isValidForSort(value) {
+      return value !== '' && value !== 'N/A' && value !== 'U' && value !== undefined && value !== null;
+    }
+
     function sortLevels(levels, key) {
-      return levels.slice().sort((a, b) => {
-        let valA, valB;
+      // Filter out levels without valid data for the sorting key
+      const filtered = levels.filter((l) => {
         switch (key) {
-          case 'rank':
-            valA = parseNum(a[1]);
-            valB = parseNum(b[1]);
-            return (valA ?? Infinity) - (valB ?? Infinity);
-          case 'enjoyment':
-            valA = parseNum(a[9]);
-            valB = parseNum(b[9]);
-            return (valB ?? -Infinity) - (valA ?? -Infinity); // descending
-          case 'order':
-            valA = parseNum(a[18]);
-            valB = parseNum(b[18]);
-            return (valA ?? Infinity) - (valB ?? Infinity);
-          case 'gddl':
-            valA = parseNum(a[6]);
-            valB = parseNum(b[6]);
-            return (valA ?? Infinity) - (valB ?? Infinity);
-          case 'pemon':
-            valA = parseNum(a[7]);
-            valB = parseNum(b[7]);
-            return (valA ?? Infinity) - (valB ?? Infinity);
-          case 'worstfail':
-            valA = parseNum(a[12]);
-            valB = parseNum(b[12]);
-            return (valA ?? Infinity) - (valB ?? Infinity);
-          default:
-            return 0;
+          case 'rank': return isValidForSort(l[1]);
+          case 'gddl': return isValidForSort(l[6]);
+          case 'pemon': return isValidForSort(l[7]);
+          case 'order': return isValidForSort(l[18]);
+          case 'enjoyment': return isValidForSort(l[9]);
+          case 'worstfail': return isValidForSort(l[12]);
+          default: return true;
         }
       });
+
+      switch (key) {
+        case 'rank':
+          filtered.sort((a, b) => Number(a[1]) - Number(b[1]));
+          break;
+        case 'gddl':
+          filtered.sort((a, b) => Number(b[6]) - Number(a[6])); // reversed order
+          break;
+        case 'pemon':
+          filtered.sort((a, b) => Number(b[7]) - Number(a[7]));
+          break;
+        case 'order':
+          filtered.sort((a, b) => Number(a[18]) - Number(b[18]));
+          break;
+        case 'enjoyment':
+          filtered.sort((a, b) => Number(a[9]) - Number(b[9]));
+          break;
+        case 'worstfail':
+          filtered.sort((a, b) => Number(b[12]) - Number(a[12])); // highest first
+          break;
+      }
+      return filtered;
     }
 
     function renderLevels(levels) {
       const container = document.getElementById('levels');
       container.innerHTML = '';
-      levels.forEach((data) => {
-        const levelDiv = buildLevelDiv(data);
+      levels.forEach((level) => {
+        const levelDiv = buildLevelDiv(level);
         container.appendChild(levelDiv);
       });
     }
 
-    // Tabs event listeners
-    document.querySelectorAll('.tab').forEach((tab) => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
-        tab.classList.add('active');
-        const sortKey = tab.getAttribute('data-sort');
-        const sorted = sortLevels(levelsData, sortKey);
-        renderLevels(sorted);
-      });
-    });
-
-    async function fetchData() {
+    async function fetchLevels() {
       const sheetId = '1jyql2Wzlho2N6cU7Ja45bCXgmeT_CdQM2gddff8wfzM';
-      const sheetName = 'The Sheet';
-      const query = encodeURIComponent('SELECT * OFFSET 1');
+      const sheetName = 'Sheet1'; // Change if your levels sheet is named differently
+      const query = encodeURIComponent('SELECT * OFFSET 1'); // skip header row
       const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}&tq=${query}`;
 
       try {
@@ -352,17 +387,87 @@
         levelsData = json.table.rows.map((row) =>
           row.c.map((cell) => (cell ? cell.v : ''))
         );
-
-        // Initially sort by rank and render
+        // Initial render sorted by rank ascending
         const sorted = sortLevels(levelsData, 'rank');
         renderLevels(sorted);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        document.getElementById('levels').innerText = 'Failed to load data.';
+      } catch (e) {
+        console.error('Failed to fetch levels:', e);
+        document.getElementById('levels').innerText = 'Failed to load levels.';
       }
     }
 
-    fetchData();
+    async function fetchChangelog() {
+      const sheetId = '1jyql2Wzlho2N6cU7Ja45bCXgmeT_CdQM2gddff8wfzM';
+      const sheetName = 'Changelog';
+      const query = encodeURIComponent('SELECT B,C,D,E,F,G,H OFFSET 1');
+      const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}&tq=${query}`;
+
+      try {
+        const response = await fetch(url);
+        const text = await response.text();
+        const json = JSON.parse(text.substring(47).slice(0, -2));
+        const rows = json.table.rows.map((row) =>
+          row.c.map((cell) => (cell ? cell.v : ''))
+        );
+
+        const grouped = {};
+        rows.forEach((r) => {
+          const date = r[0] || 'Unknown Date';
+          if (!grouped[date]) grouped[date] = [];
+          grouped[date].push(r);
+        });
+
+        let html = '';
+        for (const date of Object.keys(grouped)) {
+          html += `<h3>${date}</h3><table border="1" cellpadding="6" cellspacing="0" style="border-collapse: collapse; width: 100%; margin-bottom: 30px;">
+            <thead style="background: #7aaeb4; color: white;">
+              <tr>
+                <th>POS.</th><th>NAME</th><th>CREATOR</th><th>Change</th><th>PGDDL</th><th>Notes</th>
+              </tr>
+            </thead><tbody>`;
+          grouped[date].forEach((r) => {
+            html += `<tr>
+              <td style="text-align: center;">${r[1] || ''}</td>
+              <td>${r[2] || ''}</td>
+              <td>${r[3] || ''}</td>
+              <td style="text-align: center;">${r[4] || ''}</td>
+              <td style="text-align: center;">${r[5] || ''}</td>
+              <td>${r[6] || ''}</td>
+            </tr>`;
+          });
+          html += '</tbody></table>';
+        }
+        const changelogContainer = document.getElementById('changelog');
+        changelogContainer.innerHTML = html;
+      } catch (err) {
+        console.error('Error loading changelog:', err);
+        document.getElementById('changelog').innerText = 'Failed to load changelog.';
+      }
+    }
+
+    // Tab click logic
+    document.querySelectorAll('.tab').forEach((tab) => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
+        tab.classList.add('active');
+        const sortKey = tab.getAttribute('data-sort');
+        const levelsContainer = document.getElementById('levels');
+        const changelogContainer = document.getElementById('changelog');
+
+        if (sortKey === 'changelog') {
+          levelsContainer.style.display = 'none';
+          changelogContainer.style.display = 'block';
+          fetchChangelog();
+        } else {
+          changelogContainer.style.display = 'none';
+          levelsContainer.style.display = 'block';
+          const sorted = sortLevels(levelsData, sortKey);
+          renderLevels(sorted);
+        }
+      });
+    });
+
+    fetchLevels();
   </script>
 </body>
 </html>
