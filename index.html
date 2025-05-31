@@ -7,22 +7,46 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 20px;
-      background-color: #f4f4f4;
+      background-color: #d0e2e4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
     }
     .level {
+      width: 600px;
+      margin: 20px auto;
       background: #fff;
       border-radius: 8px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
       overflow: hidden;
-      display: flex;
-      flex-direction: row;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    .level:hover {
+      transform: scale(1.02);
+    }
+    .level-header {
+      padding: 15px;
+    }
+    .level-details {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      padding: 0 15px;
+    }
+    .level.expanded .level-details {
+      max-height: 1000px;
+      padding: 15px;
     }
     .thumbnail {
-      width: 150px;
-      height: 150px;
+      width: 100%;
+      aspect-ratio: 16 / 9;
       object-fit: cover;
+      border-radius: 8px 8px 0 0;
     }
     .details {
       padding: 15px;
@@ -52,8 +76,6 @@
         const text = await response.text();
         const json = JSON.parse(text.substring(47).slice(0, -2));
         const rows = json.table.rows;
-        const query = encodeURIComponent('SELECT * OFFSET 1');
-
 
         const levelsContainer = document.getElementById('levels');
         rows.forEach(row => {
@@ -63,15 +85,20 @@
           levelDiv.className = 'level';
 
           const img = document.createElement('img');
-          img.src = data[19]; // Column T: Thumbnail Image URL
-          img.alt = data[3];  // Column D: Level Name
+          img.src = data[19];
+          img.alt = data[3];
           img.className = 'thumbnail';
 
-          const detailsDiv = document.createElement('div');
-          detailsDiv.className = 'details';
-          detailsDiv.innerHTML = `
+          const headerDiv = document.createElement('div');
+          headerDiv.className = 'level-header';
+          headerDiv.innerHTML = `
             <h2>#${data[1]} - ${data[3]}</h2>
             <p><strong>Creator:</strong> ${data[4]}</p>
+          `;
+
+          const detailsDiv = document.createElement('div');
+          detailsDiv.className = 'level-details';
+          detailsDiv.innerHTML = `
             <p><strong>PGDDL:</strong> ${data[5]}</p>
             <p><strong>GDDL:</strong> ${data[6]}</p>
             <p><strong>PEMON:</strong> ${data[7]}</p>
@@ -90,7 +117,13 @@
           `;
 
           levelDiv.appendChild(img);
+          levelDiv.appendChild(headerDiv);
           levelDiv.appendChild(detailsDiv);
+
+          levelDiv.addEventListener('click', () => {
+            levelDiv.classList.toggle('expanded');
+          });
+
           levelsContainer.appendChild(levelDiv);
         });
       } catch (error) {
