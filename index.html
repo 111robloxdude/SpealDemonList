@@ -59,24 +59,13 @@
         rows.forEach(row => {
           const data = row.c.map(cell => (cell ? cell.v : ''));
 
-// Assuming 'levels' is an array of objects representing each level
-levels.forEach(level => {
-  const levelElement = document.createElement('div');
-  levelElement.classList.add('level');
+          const levelDiv = document.createElement('div');
+          levelDiv.className = 'level';
 
-  const thumbnail = document.createElement('img');
-  thumbnail.src = level.thumbnail; // Assuming 'thumbnail' is the property holding the image path
-  thumbnail.alt = level.name;
-
-  const name = document.createElement('h3');
-  name.textContent = level.name;
-
-  levelElement.appendChild(thumbnail);
-  levelElement.appendChild(name);
-
-  document.getElementById('level-list').appendChild(levelElement);
-});
-
+          const img = document.createElement('img');
+          img.src = data[19]; // Column T: Thumbnail Image URL
+          img.alt = data[3];  // Column D: Level Name
+          img.className = 'thumbnail';
 
           const detailsDiv = document.createElement('div');
           detailsDiv.className = 'details';
