@@ -19,9 +19,10 @@
 
   <script>
     async function fetchData() {
-      const sheetId = '1jyql2Wzlho2N6cU7Ja45bCXgmeT_CdQM2gddff8wfzM'; // Replace with your actual Google Sheet ID
-      const sheetName = 'The Sheet'; // Replace with your actual sheet name
-      const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+      const sheetId = '1jyql2Wzlho2N6cU7Ja45bCXgmeT_CdQM2gddff8wfzM';
+      const sheetName = 'The Sheet';
+      const query = encodeURIComponent('SELECT * OFFSET 1');
+      const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}&tq=${query}`;
 
       try {
         const response = await fetch(url);
