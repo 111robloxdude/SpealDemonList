@@ -16,7 +16,6 @@
     #container {
       width: 650px;
     }
-    /* Tabs container */
     #tabs {
       display: flex;
       justify-content: center;
@@ -43,13 +42,9 @@
       color: white;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
-    #levels {
-      /* container for levels */
+    #levels, #changelog {
+      display: none;
     }
-    #changelog {
-      /* container for changelog */
-    }
-    /* Levels styling */
     .level {
       background: #fff;
       border-radius: 8px;
@@ -90,7 +85,6 @@
     .details p em {
       font-style: italic;
     }
-
     .level-details {
       max-height: 0;
       overflow: hidden;
@@ -131,8 +125,6 @@
       font-size: 14px;
       text-align: center;
     }
-
-    /* Centering mode block text */
     .mode-block {
       display: flex;
       justify-content: center;
@@ -142,8 +134,6 @@
       font-weight: bold;
       font-size: 1.1em;
     }
-
-    /* Changelog tables */
     #changelog h3 {
       margin-top: 30px;
       margin-bottom: 10px;
@@ -181,6 +171,9 @@
   <div id="container">
     <div id="tabs">
       <div class="tab active" data-sort="rank">Rank</div>
+      <div class="tab" data-sort="main">Main List</div>
+      <div class="tab" data-sort="extended">Extended List</div>
+      <div class="tab" data-sort="legacy">Legacy List</div>
       <div class="tab" data-sort="gddl">GDDL</div>
       <div class="tab" data-sort="pemon">PEMON</div>
       <div class="tab" data-sort="order">Order Beaten</div>
@@ -188,8 +181,8 @@
       <div class="tab" data-sort="worstfail">Worst Fail</div>
       <div class="tab" data-sort="changelog">Changelog</div>
     </div>
-    <div id="levels"></div>
-    <div id="changelog" style="display:none;"></div>
+    <div id="levels" style="display:block;"></div>
+    <div id="changelog"></div>
   </div>
 
   <script>
@@ -350,13 +343,13 @@
           filtered.sort((a, b) => Number(b[6]) - Number(a[6])); // reversed order
           break;
         case 'pemon':
-          filtered.sort((a, b) => Number(a[7]) - Number(b[7])); // reversed order
+          filtered.sort((a, b) => Number(b[7]) - Number(a[7]));
           break;
         case 'order':
           filtered.sort((a, b) => Number(a[18]) - Number(b[18]));
           break;
         case 'enjoyment':
-          filtered.sort((a, b) => Number(b[9]) - Number(a[9]));
+          filtered.sort((a, b) => Number(a[9]) - Number(b[9]));
           break;
         case 'worstfail':
           filtered.sort((a, b) => Number(b[12]) - Number(a[12])); // highest first
@@ -376,7 +369,7 @@
 
     async function fetchLevels() {
       const sheetId = '1jyql2Wzlho2N6cU7Ja45bCXgmeT_CdQM2gddff8wfzM';
-      const sheetName = 'The Sheet'; // Change if your levels sheet is named differently
+      const sheetName = 'Sheet1'; // Change if your levels sheet is named differently
       const query = encodeURIComponent('SELECT * OFFSET 1'); // skip header row
       const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}&tq=${query}`;
 
@@ -445,7 +438,19 @@
       }
     }
 
-    // Tab click logic
+    function filterByListType(type) {
+      switch(type) {
+        case 'main':
+          return levelsData.filter((l) => Number(l[1]) >= 1 && Number(l[1]) <= 75);
+        case 'extended':
+          return levelsData.filter((l) => Number(l[1]) >= 76 && Number(l[1]) <= 150);
+        case 'legacy':
+          return levelsData.filter((l) => Number(l[1]) >= 151);
+        default:
+          return sortLevels(levelsData, type);
+      }
+    }
+
     document.querySelectorAll('.tab').forEach((tab) => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
@@ -461,8 +466,8 @@
         } else {
           changelogContainer.style.display = 'none';
           levelsContainer.style.display = 'block';
-          const sorted = sortLevels(levelsData, sortKey);
-          renderLevels(sorted);
+          const filtered = filterByListType(sortKey);
+          renderLevels(filtered);
         }
       });
     });
