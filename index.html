@@ -13,91 +13,71 @@
       justify-content: center;
       padding: 20px;
     }
-    #levels {
-      width: 700px;
+    h1 {
+      text-align: center;
+      margin-bottom: 25px; /* Add spacing below title */
     }
     .level {
+      width: 600px;
+      margin: 20px auto;
       background: #fff;
       border-radius: 8px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       overflow: hidden;
       cursor: pointer;
-      margin-bottom: 20px;
-
       display: flex;
       flex-direction: row;
-      align-items: center; /* vertically center content */
-      transition: all 0.3s ease;
+      align-items: center;
+      gap: 15px;
     }
-    /* Thumbnail styling */
     .thumbnail {
-      width: 250px;
-      height: 140px; /* landscape ratio */
+      width: 200px;
+      aspect-ratio: 16 / 9;
       object-fit: cover;
-      border-radius: 8px 0 0 8px;
-      flex-shrink: 0; /* don't shrink */
+      border-radius: 8px;
+      flex-shrink: 0;
       transition: all 0.3s ease;
     }
-    /* Text container on the right */
     .text-container {
-      padding: 0 20px;
       flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center; /* vertical center */
-      height: 140px;
+      text-align: center; /* Center text vertically and horizontally */
     }
     .title {
-      font-size: 1.25rem;
-      font-weight: bold;
-      margin: 0 0 6px 0;
+      margin: 0 0 5px 0;
     }
     .creator {
-      font-size: 1rem;
-      margin: 0;
+      font-style: italic;
       color: #555;
+      margin: 0 0 10px 0;
     }
-
-    /* Details hidden by default */
     .level-details {
       max-height: 0;
       overflow: hidden;
-      padding: 0 20px;
-      transition: max-height 0.4s ease, padding 0.4s ease;
-      font-size: 0.9rem;
-      color: #333;
+      transition: max-height 0.3s ease;
+      padding: 0 15px;
+      width: 100%;
+      box-sizing: border-box;
     }
-
-    /* Expanded state styles */
     .level.expanded {
       flex-direction: column;
       align-items: center;
-      height: auto;
     }
     .level.expanded .thumbnail {
       width: 100%;
-      height: auto;
       border-radius: 8px 8px 0 0;
-      margin-bottom: 10px;
     }
     .level.expanded .text-container {
-      padding: 0 20px 10px;
-      height: auto;
-      align-items: center;
       text-align: center;
-    }
-    .level.expanded .title {
-      font-size: 1.5rem;
-      margin-bottom: 10px;
-    }
-    .level.expanded .creator {
-      font-size: 1.1rem;
-      margin-bottom: 10px;
+      padding: 15px;
+      width: 100%;
     }
     .level.expanded .level-details {
-      max-height: 1000px;
-      padding: 10px 20px 20px;
-      width: 100%;
+      max-height: 1000px; /* Adjust as needed */
+      padding: 15px;
+    }
+    .level-details p {
+      margin: 5px 0;
+      text-align: left;
     }
   </style>
 </head>
@@ -125,20 +105,21 @@
           const levelDiv = document.createElement('div');
           levelDiv.className = 'level';
 
+          // Thumbnail image
           const img = document.createElement('img');
           img.src = data[19]; // Column T: Thumbnail Image URL
           img.alt = data[3];  // Column D: Level Name
           img.className = 'thumbnail';
 
-          // Container for title and creator (always visible)
+          // Text container (rank, name, creator)
           const textContainer = document.createElement('div');
           textContainer.className = 'text-container';
           textContainer.innerHTML = `
             <h2 class="title">#${data[1]} - ${data[3]}</h2>
-            <p class="creator">Creator: ${data[4]}</p>
+            <p class="creator">by: ${data[4]}</p>
           `;
 
-          // Details container (hidden unless expanded)
+          // Details container (hidden by default)
           const detailsDiv = document.createElement('div');
           detailsDiv.className = 'level-details';
           detailsDiv.innerHTML = `
@@ -164,7 +145,7 @@
           levelDiv.appendChild(detailsDiv);
           levelsContainer.appendChild(levelDiv);
 
-          // Toggle expand on click
+          // Toggle expand/collapse on click
           levelDiv.addEventListener('click', () => {
             levelDiv.classList.toggle('expanded');
           });
