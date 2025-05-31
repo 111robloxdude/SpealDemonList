@@ -13,13 +13,12 @@
       justify-content: center;
       padding: 20px;
     }
-    h1 {
-      text-align: center;
-      margin-bottom: 25px; /* Add spacing below title */
+    #levels {
+      width: 600px;
     }
     .level {
-      width: 600px;
-      margin: 20px auto;
+      width: 100%;
+      margin: 20px 0;
       background: #fff;
       border-radius: 8px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -27,7 +26,7 @@
       cursor: pointer;
       display: flex;
       flex-direction: row;
-      align-items: center;
+      align-items: center; /* Vertically center text next to thumbnail */
       gap: 15px;
     }
     .thumbnail {
@@ -40,7 +39,10 @@
     }
     .text-container {
       flex: 1;
-      text-align: center; /* Center text vertically and horizontally */
+      display: flex;
+      flex-direction: column;
+      justify-content: center; /* vertical center text block */
+      text-align: center;
     }
     .title {
       margin: 0 0 5px 0;
@@ -70,6 +72,7 @@
       text-align: center;
       padding: 15px;
       width: 100%;
+      display: block; /* reset flex when expanded */
     }
     .level.expanded .level-details {
       max-height: 1000px; /* Adjust as needed */
@@ -82,7 +85,6 @@
   </style>
 </head>
 <body>
-  <h1>The List</h1>
   <div id="levels"></div>
 
   <script>
@@ -105,13 +107,11 @@
           const levelDiv = document.createElement('div');
           levelDiv.className = 'level';
 
-          // Thumbnail image
           const img = document.createElement('img');
           img.src = data[19]; // Column T: Thumbnail Image URL
           img.alt = data[3];  // Column D: Level Name
           img.className = 'thumbnail';
 
-          // Text container (rank, name, creator)
           const textContainer = document.createElement('div');
           textContainer.className = 'text-container';
           textContainer.innerHTML = `
@@ -119,7 +119,6 @@
             <p class="creator">by: ${data[4]}</p>
           `;
 
-          // Details container (hidden by default)
           const detailsDiv = document.createElement('div');
           detailsDiv.className = 'level-details';
           detailsDiv.innerHTML = `
@@ -145,7 +144,6 @@
           levelDiv.appendChild(detailsDiv);
           levelsContainer.appendChild(levelDiv);
 
-          // Toggle expand/collapse on click
           levelDiv.addEventListener('click', () => {
             levelDiv.classList.toggle('expanded');
           });
