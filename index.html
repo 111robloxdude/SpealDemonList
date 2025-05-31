@@ -356,7 +356,7 @@
           filtered.sort((a, b) => Number(a[18]) - Number(b[18]));
           break;
         case 'enjoyment':
-          filtered.sort((a, b) => Number(a[9]) - Number(b[9]));
+          filtered.sort((a, b) => Number(b[9]) - Number(a[9]));
           break;
         case 'worstfail':
           filtered.sort((a, b) => Number(b[12]) - Number(a[12])); // highest first
