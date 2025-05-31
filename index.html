@@ -1,89 +1,93 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Speal's Personal Demon List</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background-color: #d0e2e4;
-      display: flex;
-      justify-content: center;
-      padding: 20px;
-    }
-    #levels {
-      width: 600px;
-    }
-    .level {
-      width: 100%;
-      margin: 20px 0;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      overflow: hidden;
-      cursor: pointer;
-      display: flex;
-      flex-direction: row;
-      align-items: center; /* Vertically center text next to thumbnail */
-      gap: 15px;
-    }
-    .thumbnail {
-      width: 200px;
-      aspect-ratio: 16 / 9;
-      object-fit: cover;
-      border-radius: 8px;
-      flex-shrink: 0;
-      transition: all 0.3s ease;
-    }
-    .text-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center; /* vertical center text block */
-      text-align: center;
-    }
-    .title {
-      margin: 0 0 5px 0;
-    }
-    .creator {
-      font-style: italic;
-      color: #555;
-      margin: 0 0 10px 0;
-    }
-    .level-details {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease;
-      padding: 0 15px;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    .level.expanded {
-      flex-direction: column;
-      align-items: center;
-    }
-    .level.expanded .thumbnail {
-      width: 100%;
-      border-radius: 8px 8px 0 0;
-    }
-    .level.expanded .text-container {
-      text-align: center;
-      padding: 15px;
-      width: 100%;
-      display: block; /* reset flex when expanded */
-    }
-    .level.expanded .level-details {
-      max-height: 1000px; /* Adjust as needed */
-      padding: 15px;
-    }
-    .level-details p {
-      margin: 5px 0;
-      text-align: left;
-    }
-  </style>
-</head>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #d0e2e4;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+  }
+  #levels {
+    width: 650px;
+  }
+  .level {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.4s ease;
+  }
+  .level-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 10px 20px;
+  }
+  .thumbnail {
+    width: 250px;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+  .details {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding-left: 20px;
+    min-width: 300px;
+  }
+  .details h2, .details p {
+    margin: 4px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  .details p em {
+    font-style: italic;
+  }
+
+  .level-details {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.6s ease, padding 0.6s ease;
+    padding: 0 20px;
+  }
+  .level.expanded .level-details {
+    max-height: 1500px;
+    padding: 15px 20px 25px;
+  }
+  .expanded-title {
+    text-align: center;
+    margin: 10px 0 20px;
+  }
+  .creator-line {
+    text-align: center;
+    font-style: italic;
+    margin-bottom: 10px;
+  }
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 5px;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .info-grid p {
+    margin: 0;
+  }
+  .info-header {
+    font-weight: bold;
+  }
+  .info-data {
+    font-size: 14px;
+  }
+</style>
+
 <body>
   <div id="levels"></div>
 
@@ -107,41 +111,65 @@
           const levelDiv = document.createElement('div');
           levelDiv.className = 'level';
 
+          const levelRow = document.createElement('div');
+          levelRow.className = 'level-row';
+
           const img = document.createElement('img');
-          img.src = data[19]; // Column T: Thumbnail Image URL
-          img.alt = data[3];  // Column D: Level Name
+          img.src = data[19];
+          img.alt = data[3];
           img.className = 'thumbnail';
 
-          const textContainer = document.createElement('div');
-          textContainer.className = 'text-container';
-          textContainer.innerHTML = `
-            <h2 class="title">#${data[1]} - ${data[3]}</h2>
-            <p class="creator">by: ${data[4]}</p>
+          const mainDetails = document.createElement('div');
+          mainDetails.className = 'details';
+          mainDetails.innerHTML = `
+            <h2 title="#${data[1]} - ${data[3]}">#${data[1]} - ${data[3]}</h2>
+            <p><em>by: ${data[4]}</em></p>
           `;
 
-          const detailsDiv = document.createElement('div');
-          detailsDiv.className = 'level-details';
-          detailsDiv.innerHTML = `
-            <p><strong>PGDDL:</strong> ${data[5]}</p>
-            <p><strong>GDDL:</strong> ${data[6]}</p>
-            <p><strong>PEMON:</strong> ${data[7]}</p>
-            <p><strong>Date Beat:</strong> ${data[8]}</p>
-            <p><strong>Enjoyment:</strong> ${data[9]}</p>
-            <p><strong>Level Opinion Rank:</strong> ${data[10]}</p>
-            <p><strong>Attempt Count:</strong> ${data[11]}</p>
-            <p><strong>Worst Fail:</strong> ${data[12]}</p>
-            <p><strong>Gameplay Opinion Score:</strong> ${data[13]}</p>
-            <p><strong>Deco Opinion Score:</strong> ${data[14]}</p>
-            <p><strong>Song Opinion Score:</strong> ${data[15]}</p>
-            <p><strong>Classic Mode:</strong> ${data[16]}</p>
-            <p><strong>Platformer Mode:</strong> ${data[17]}</p>
-            <p><strong>Order Beaten:</strong> ${data[18]}</p>
-            <p><strong>Level ID:</strong> ${data[20]}</p>
+          levelRow.appendChild(img);
+          levelRow.appendChild(mainDetails);
+          levelDiv.appendChild(levelRow);
+
+          const extraDetails = document.createElement('div');
+          extraDetails.className = 'level-details';
+
+          const formatDate = (dateStr) => {
+            const match = /Date\((\d+),(\d+),(\d+)\)/.exec(dateStr);
+            if (!match) return '';
+            const [ , year, month, day ] = match.map(Number);
+            const date = new Date(year, month, day);
+            return date.toLocaleDateString('en-US', {
+              year: 'numeric', month: 'long', day: 'numeric'
+            });
+          };
+
+          const createInfoRow = (headers, values) => {
+            const valid = values.some((v) => v && v !== 'N/A');
+            if (!valid) return '';
+            const headerHTML = headers.map(h => `<div class="info-header">${h}</div>`).join('');
+            const valueHTML = values.map(v => `<div class="info-data">${v}</div>`).join('');
+            return `<div class="info-grid">${headerHTML}</div><div class="info-grid">${valueHTML}</div>`;
+          };
+
+          let modeText = [];
+          if (data[16] === true) modeText.push("Classic Mode");
+          if (data[17] === true) modeText.push("Platformer Mode");
+          const modeBlock = modeText.length > 0 ? `<div class='info-grid'><div class='info-header'>${modeText.join(' | ')}</div></div>` : '';
+
+          const dateBeat = formatDate(data[8]);
+          const chrono = data[18] ? `#${data[18]}` : '';
+          const worstFail = data[12] ? `${data[12]}%` : '';
+
+          extraDetails.innerHTML = `
+            <h2 class="expanded-title">#${data[1]} - ${data[3]}</h2>
+            ${modeBlock}
+            ${createInfoRow(["Chronological Order", "Level ID"], [chrono, data[20]])}
+            ${createInfoRow(["PGDDL", "GDDL", "PEMON", "Enjoyment"], [data[5], data[6], data[7], data[9]])}
+            ${createInfoRow(["Date Beat", "Attempt Count", "Worst Fail"], [dateBeat, data[11], worstFail])}
+            ${createInfoRow(["Gameplay Score", "Deco Score", "Song Score"], [data[13], data[14], data[15]])}
           `;
 
-          levelDiv.appendChild(img);
-          levelDiv.appendChild(textContainer);
-          levelDiv.appendChild(detailsDiv);
+          levelDiv.appendChild(extraDetails);
           levelsContainer.appendChild(levelDiv);
 
           levelDiv.addEventListener('click', () => {
@@ -156,4 +184,3 @@
     fetchData();
   </script>
 </body>
-</html>
