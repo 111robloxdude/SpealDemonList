@@ -85,6 +85,7 @@
     .details p em {
       font-style: italic;
     }
+    
     .level-details {
       max-height: 0;
       overflow: hidden;
@@ -184,8 +185,12 @@
       <div class="tab" data-sort="platformermode">Platformer Mode</div>
       <div class="tab" data-sort="changelog">Changelog</div>
     </div>
+    <div id="search-container" style="text-align:center; margin-bottom: 15px;">
+  <input type="text" id="search-input" placeholder="Search levels..." style="width: 95%; padding: 8px; font-size: 1em; border-radius: 6px; border: 1px solid #ccc;" />
+    </div>
     <div id="levels" style="display:block;"></div>
     <div id="changelog"></div>
+    
   </div>
 
   <script>
@@ -360,6 +365,21 @@
       }
       return filtered;
     }
+    function filterBySearch(levels, query) {
+  if (!query) return levels;
+  const q = query.toLowerCase();
+  return levels.filter(level => {
+    // Search in rank (#), level name (data[3]), creator (data[4])
+    const rankStr = level[1] ? level[1].toString() : '';
+    const name = level[3] ? level[3].toString().toLowerCase() : '';
+    const creator = level[4] ? level[4].toString().toLowerCase() : '';
+    return (
+      rankStr.includes(q) ||
+      name.includes(q) ||
+      creator.includes(q)
+    );
+  });
+    }
 
     function renderLevels(levels) {
       const container = document.getElementById('levels');
@@ -369,6 +389,19 @@
         container.appendChild(levelDiv);
       });
     }
+    document.getElementById('search-input').addEventListener('input', () => {
+  // Find currently active tab
+  const activeTab = document.querySelector('.tab.active');
+  if (!activeTab) return;
+  const sortKey = activeTab.getAttribute('data-sort');
+  if (sortKey === 'changelog') return; // no search on changelog
+
+  const filteredByType = filterByListType(sortKey);
+  const searchQuery = document.getElementById('search-input').value.trim();
+  const finalFiltered = filterBySearch(filteredByType, searchQuery);
+  renderLevels(finalFiltered);
+    });
+
 
     async function fetchLevels() {
       const sheetId = '1jyql2Wzlho2N6cU7Ja45bCXgmeT_CdQM2gddff8wfzM';
@@ -481,8 +514,11 @@
         } else {
           changelogContainer.style.display = 'none';
           levelsContainer.style.display = 'block';
-          const filtered = filterByListType(sortKey);
-          renderLevels(filtered);
+          const filteredByType = filterByListType(sortKey);
+        const searchQuery = document.getElementById('search-input').value.trim();
+        const finalFiltered = filterBySearch(filteredByType, searchQuery);
+        renderLevels(finalFiltered);
+
         }
       });
     });
