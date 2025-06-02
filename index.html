@@ -179,6 +179,9 @@
       <div class="tab" data-sort="order">Recently Added/History</div>
       <div class="tab" data-sort="enjoyment">Enjoyment</div>
       <div class="tab" data-sort="worstfail">Worst Fail</div>
+      <div class="tab" data-sort="highestattempts">Highest Attempts</div>
+      <div class="tab" data-sort="classicmode">Classic Mode</div>
+      <div class="tab" data-sort="platformermode">Platformer Mode</div>
       <div class="tab" data-sort="changelog">Changelog</div>
     </div>
     <div id="levels" style="display:block;"></div>
@@ -439,17 +442,29 @@
     }
 
     function filterByListType(type) {
-      switch(type) {
-        case 'main':
-          return levelsData.filter((l) => Number(l[1]) >= 1 && Number(l[1]) <= 75);
-        case 'extended':
-          return levelsData.filter((l) => Number(l[1]) >= 76 && Number(l[1]) <= 150);
-        case 'legacy':
-          return levelsData.filter((l) => Number(l[1]) >= 151);
-        default:
-          return sortLevels(levelsData, type);
-      }
-    }
+  switch(type) {
+    case 'main':
+      return levelsData.filter((l) => Number(l[1]) >= 1 && Number(l[1]) <= 75);
+    case 'extended':
+      return levelsData.filter((l) => Number(l[1]) >= 76 && Number(l[1]) <= 150);
+    case 'legacy':
+      return levelsData.filter((l) => Number(l[1]) >= 151);
+    case 'classicmode':
+      // Only levels where data[16] indicates classic mode
+      return levelsData.filter(l => l[16] === true || l[16] === 'TRUE' || l[16] === 'true' || l[16] === 1);
+    case 'platformermode':
+      // Only levels where data[17] indicates platformer mode
+      return levelsData.filter(l => l[17] === true || l[17] === 'TRUE' || l[17] === 'true' || l[17] === 1);
+    case 'highestattempts':
+      // Filter levels with valid attempt counts, sort descending by attempts (data[11])
+      return levelsData
+        .filter(l => l[11] !== '' && l[11] !== 'N/A' && l[11] !== 'U' && l[11] !== undefined && l[11] !== null)
+        .sort((a, b) => Number(b[11]) - Number(a[11]));
+    default:
+      return sortLevels(levelsData, type);
+  }
+}
+
 
     document.querySelectorAll('.tab').forEach((tab) => {
       tab.addEventListener('click', () => {
