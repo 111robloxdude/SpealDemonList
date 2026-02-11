@@ -193,337 +193,333 @@
     
   </div>
 
-  <script>
-    let levelsData = [];
+<script>
+let levelsData = [];
 
-    function formatDate(dateStr) {
-      if (!dateStr) return '';
-      const match = /Date\((\d+),(\d+),(\d+)\)/.exec(dateStr);
-      if (!match) return '';
-      let year = Number(match[1]);
-      let month = Number(match[2]);
-      let day = Number(match[3]);
-      const date = new Date(year, month, day);
-      return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
+/* -------------------- Utilities -------------------- */
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const match = /Date\((\d+),(\d+),(\d+)\)/.exec(dateStr);
+  if (!match) return '';
+  let year = Number(match[1]);
+  let month = Number(match[2]);
+  let day = Number(match[3]);
+  const date = new Date(year, month, day);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
+function parseNum(value) {
+  if (value === '' || value === 'N/A' || value === 'U' || value === undefined || value === null)
+    return null;
+  const num = Number(value);
+  return isNaN(num) ? null : num;
+}
+
+function isValidForSort(value) {
+  return value !== '' && value !== 'N/A' && value !== 'U' && value !== undefined && value !== null;
+}
+
+/* -------------------- Level Builder -------------------- */
+
+function buildLevelDiv(data, listPosition, isExcluded) {
+
+  const levelDiv = document.createElement('div');
+  levelDiv.className = 'level';
+
+  const levelRow = document.createElement('div');
+  levelRow.className = 'level-row';
+
+  const img = document.createElement('img');
+  img.src = data[19] || '';
+  img.alt = data[3] || 'Level Image';
+  img.className = 'thumbnail';
+
+  const mainDetails = document.createElement('div');
+  mainDetails.className = 'details';
+
+  let rankText = `#${data[1]}`;
+  if (!isExcluded) {
+    rankText = `[#${listPosition}] - ${rankText}`;
+  }
+
+  mainDetails.innerHTML = `
+    <h2 title="${rankText} - ${data[3]}">${rankText} - ${data[3]}</h2>
+    <p><em>by: ${data[4]}</em></p>
+  `;
+
+  levelRow.appendChild(img);
+  levelRow.appendChild(mainDetails);
+  levelDiv.appendChild(levelRow);
+
+  const extraDetails = document.createElement('div');
+  extraDetails.className = 'level-details';
+
+  let modeText = [];
+  if (data[16] === true || data[16] === 'TRUE' || data[16] === 'true' || data[16] === 1)
+    modeText.push('Classic Mode');
+  if (data[17] === true || data[17] === 'TRUE' || data[17] === 'true' || data[17] === 1)
+    modeText.push('Platformer Mode');
+
+  const modeBlock =
+    modeText.length > 0
+      ? `<div class='mode-block'><div>${modeText.join(' | ')}</div></div>`
+      : '';
+
+  const chrono = data[18] ? `#${data[18]}` : '';
+  const dateBeat = formatDate(data[8]);
+  const worstFail = data[12] ? `${data[12]}%` : '';
+
+  extraDetails.innerHTML = `
+    <h2 class="expanded-title">${rankText} - ${data[3]}</h2>
+    ${modeBlock}
+    ${createInfoRow(['Completion #', 'Level ID'], [chrono, data[20]])}
+    ${createInfoRow(['PGDDL', 'GDDL', 'PEMON', 'Enjoyment'], [data[5], data[6], data[7], data[9]])}
+    ${createInfoRow(['Date Beat', 'Attempt Count', 'Worst Fail'], [dateBeat, data[11], worstFail])}
+    ${createInfoRow(['Gameplay Score', 'Deco Score', 'Song Score'], [data[13], data[14], data[15]])}
+  `;
+
+  levelDiv.appendChild(extraDetails);
+
+  levelDiv.addEventListener('click', () => {
+    levelDiv.classList.toggle('expanded');
+  });
+
+  return levelDiv;
+}
+
+function createInfoRow(headers, values) {
+  const valid = values.some(v => v !== '' && v !== 'N/A' && v !== 'U' && v !== undefined && v !== null);
+  if (!valid) return '';
+
+  let gridClass = '';
+  if (headers.length === 2) gridClass = 'two-cols';
+  else if (headers.length === 3) gridClass = 'three-cols';
+
+  const headerHTML = headers.map(h => `<div class="info-header">${h}</div>`).join('');
+  const valueHTML = values.map(v => `<div class="info-data">${v}</div>`).join('');
+
+  return `<div class="info-grid ${gridClass}">${headerHTML}</div>
+          <div class="info-grid ${gridClass}">${valueHTML}</div>`;
+}
+
+/* -------------------- Sorting -------------------- */
+
+function sortLevels(levels, key) {
+
+  const filtered = levels.filter((l) => {
+    switch (key) {
+      case 'rank': return isValidForSort(l[1]);
+      case 'gddl': return isValidForSort(l[6]);
+      case 'pemon': return isValidForSort(l[7]);
+      case 'order': return isValidForSort(l[18]);
+      case 'enjoyment': return isValidForSort(l[9]);
+      case 'worstfail': return isValidForSort(l[12]);
+      default: return true;
     }
+  });
 
-    function createInfoRow(headers, values) {
-      const valid = values.some(
-        (v) => v !== '' && v !== 'N/A' && v !== 'U' && v !== undefined && v !== null
-      );
-      if (!valid) return '';
-      let gridClass = '';
-      if (headers.length === 2) gridClass = 'two-cols';
-      else if (headers.length === 3) gridClass = 'three-cols';
+  switch (key) {
+    case 'rank':
+      filtered.sort((a, b) => Number(a[1]) - Number(b[1]));
+      break;
+    case 'gddl':
+      filtered.sort((a, b) => Number(b[6]) - Number(a[6]));
+      break;
+    case 'pemon':
+      filtered.sort((a, b) => Number(a[7]) - Number(b[7]));
+      break;
+    case 'order':
+      filtered.sort((a, b) => Number(b[18]) - Number(a[18]));
+      break;
+    case 'enjoyment':
+      filtered.sort((a, b) => Number(b[9]) - Number(a[9]));
+      break;
+    case 'worstfail':
+      filtered.sort((a, b) => Number(b[12]) - Number(a[12]));
+      break;
+  }
 
-      const headerHTML = headers
-        .map((h) => `<div class="info-header">${h}</div>`)
-        .join('');
-      const valueHTML = values
-        .map((v) => `<div class="info-data">${v}</div>`)
-        .join('');
-      return `<div class="info-grid ${gridClass}">${headerHTML}</div><div class="info-grid ${gridClass}">${valueHTML}</div>`;
-    }
+  return filtered;
+}
 
-    function buildLevelDiv(data) {
-      const levelDiv = document.createElement('div');
-      levelDiv.className = 'level';
+/* -------------------- Filtering -------------------- */
 
-      const levelRow = document.createElement('div');
-      levelRow.className = 'level-row';
-
-      const img = document.createElement('img');
-      img.src = data[19] || '';
-      img.alt = data[3] || 'Level Image';
-      img.className = 'thumbnail';
-
-      const mainDetails = document.createElement('div');
-      mainDetails.className = 'details';
-
-      const rankText = `#${data[1]}`;
-      mainDetails.innerHTML = `
-        <h2 title="#${data[1]} - ${data[3]}">${rankText} - ${data[3]}</h2>
-        <p><em>by: ${data[4]}</em></p>
-      `;
-
-      levelRow.appendChild(img);
-      levelRow.appendChild(mainDetails);
-      levelDiv.appendChild(levelRow);
-
-      const extraDetails = document.createElement('div');
-      extraDetails.className = 'level-details';
-
-      let modeText = [];
-      if (
-        data[16] === true ||
-        data[16] === 'TRUE' ||
-        data[16] === 'true' ||
-        data[16] === 1
-      )
-        modeText.push('Classic Mode');
-      if (
-        data[17] === true ||
-        data[17] === 'TRUE' ||
-        data[17] === 'true' ||
-        data[17] === 1
-      )
-        modeText.push('Platformer Mode');
-
-      const modeBlock =
-        modeText.length > 0
-          ? `<div class='mode-block'><div>${modeText.join(' | ')}</div></div>`
-          : '';
-
-      const chrono =
-        data[18] !== '' && data[18] !== undefined ? `#${data[18]}` : '';
-      const dateBeat = formatDate(data[8]);
-      const worstFail = data[12] !== '' && data[12] !== undefined ? `${data[12]}%` : '';
-
-      extraDetails.innerHTML = `
-        <h2 class="expanded-title">${rankText} - ${data[3]}</h2>
-        ${modeBlock}
-        ${createInfoRow(['Completion #', 'Level ID'], [chrono, data[20]])}
-        ${createInfoRow(
-          ['PGDDL', 'GDDL', 'PEMON', 'Enjoyment'],
-          [data[5], data[6], data[7], data[9]]
-        )}
-        ${createInfoRow(
-          ['Date Beat', 'Attempt Count', 'Worst Fail'],
-          [dateBeat, data[11], worstFail]
-        )}
-        ${createInfoRow(['Gameplay Score', 'Deco Score', 'Song Score'], [
-          data[13],
-          data[14],
-          data[15],
-        ])}
-      `;
-
-      levelDiv.appendChild(extraDetails);
-
-      levelDiv.addEventListener('click', () => {
-        levelDiv.classList.toggle('expanded');
-      });
-
-      return levelDiv;
-    }
-
-    // Utility: parse number or return null for invalid
-    function parseNum(value) {
-      if (
-        value === '' ||
-        value === 'N/A' ||
-        value === 'U' ||
-        value === undefined ||
-        value === null
-      )
-        return null;
-      const num = Number(value);
-      return isNaN(num) ? null : num;
-    }
-
-    function isValidForSort(value) {
-      return value !== '' && value !== 'N/A' && value !== 'U' && value !== undefined && value !== null;
-    }
-
-    function sortLevels(levels, key) {
-      // Filter out levels without valid data for the sorting key
-      const filtered = levels.filter((l) => {
-        switch (key) {
-          case 'rank': return isValidForSort(l[1]);
-          case 'gddl': return isValidForSort(l[6]);
-          case 'pemon': return isValidForSort(l[7]);
-          case 'order': return isValidForSort(l[18]);
-          case 'enjoyment': return isValidForSort(l[9]);
-          case 'worstfail': return isValidForSort(l[12]);
-          default: return true;
-        }
-      });
-
-      switch (key) {
-        case 'rank':
-          filtered.sort((a, b) => Number(a[1]) - Number(b[1]));
-          break;
-        case 'gddl':
-          filtered.sort((a, b) => Number(b[6]) - Number(a[6])); // reversed order
-          break;
-        case 'pemon':
-          filtered.sort((a, b) => Number(a[7]) - Number(b[7]));
-          break;
-        case 'order':
-          filtered.sort((a, b) => Number(b[18]) - Number(a[18]));
-          break;
-        case 'enjoyment':
-          filtered.sort((a, b) => Number(b[9]) - Number(a[9]));
-          break;
-        case 'worstfail':
-          filtered.sort((a, b) => Number(b[12]) - Number(a[12])); // highest first
-          break;
-      }
-      return filtered;
-    }
-    function filterBySearch(levels, query) {
+function filterBySearch(levels, query) {
   if (!query) return levels;
   const q = query.toLowerCase();
+
   return levels.filter(level => {
-    // Search in rank (#), level name (data[3]), creator (data[4])
     const rankStr = level[1] ? level[1].toString() : '';
     const name = level[3] ? level[3].toString().toLowerCase() : '';
     const creator = level[4] ? level[4].toString().toLowerCase() : '';
-    return (
-      rankStr.includes(q) ||
-      name.includes(q) ||
-      creator.includes(q)
-    );
+    return rankStr.includes(q) || name.includes(q) || creator.includes(q);
   });
-    }
+}
 
-    function renderLevels(levels) {
-      const container = document.getElementById('levels');
-      container.innerHTML = '';
-      levels.forEach((level) => {
-        const levelDiv = buildLevelDiv(level);
-        container.appendChild(levelDiv);
-      });
-    }
-    document.getElementById('search-input').addEventListener('input', () => {
-  // Find currently active tab
-  const activeTab = document.querySelector('.tab.active');
-  if (!activeTab) return;
-  const sortKey = activeTab.getAttribute('data-sort');
-  if (sortKey === 'changelog') return; // no search on changelog
-
-  const filteredByType = filterByListType(sortKey);
-  const searchQuery = document.getElementById('search-input').value.trim();
-  const finalFiltered = filterBySearch(filteredByType, searchQuery);
-  renderLevels(finalFiltered);
-    });
-
-
-    async function fetchLevels() {
-      const sheetId = '1jyql2Wzlho2N6cU7Ja45bCXgmeT_CdQM2gddff8wfzM';
-      const sheetName = 'Sheet1'; // Change if your levels sheet is named differently
-      const query = encodeURIComponent('SELECT * OFFSET 1'); // skip header row
-      const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}&tq=${query}`;
-
-      try {
-        const response = await fetch(url);
-        const text = await response.text();
-        const json = JSON.parse(text.substring(47).slice(0, -2));
-        levelsData = json.table.rows.map((row) =>
-          row.c.map((cell) => (cell ? cell.v : ''))
-        );
-        // Initial render sorted by rank ascending
-        const sorted = sortLevels(levelsData, 'rank');
-        renderLevels(sorted);
-      } catch (e) {
-        console.error('Failed to fetch levels:', e);
-        document.getElementById('levels').innerText = 'Failed to load levels.';
-      }
-    }
-
-    async function fetchChangelog() {
-      const sheetId = '1jyql2Wzlho2N6cU7Ja45bCXgmeT_CdQM2gddff8wfzM';
-      const sheetName = 'Changelog';
-      const query = encodeURIComponent('SELECT B,C,D,E,F,G,H OFFSET 1');
-      const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}&tq=${query}`;
-
-      try {
-        const response = await fetch(url);
-        const text = await response.text();
-        const json = JSON.parse(text.substring(47).slice(0, -2));
-        const rows = json.table.rows.map((row) =>
-          row.c.map((cell) => (cell ? cell.v : ''))
-        );
-
-        const grouped = {};
-        rows.forEach((r) => {
-          const date = r[0] || 'Unknown Date';
-          if (!grouped[date]) grouped[date] = [];
-          grouped[date].push(r);
-        });
-
-        let html = '';
-        for (const date of Object.keys(grouped)) {
-          html += `<h3>${date}</h3><table border="1" cellpadding="6" cellspacing="0" style="border-collapse: collapse; width: 100%; margin-bottom: 30px;">
-            <thead style="background: #7aaeb4; color: white;">
-              <tr>
-                <th>POS.</th><th>NAME</th><th>CREATOR</th><th>Change</th><th>PGDDL</th><th>Notes</th>
-              </tr>
-            </thead><tbody>`;
-          grouped[date].forEach((r) => {
-            html += `<tr>
-              <td style="text-align: center;">${r[1] || ''}</td>
-              <td>${r[2] || ''}</td>
-              <td>${r[3] || ''}</td>
-              <td style="text-align: center;">${r[4] || ''}</td>
-              <td style="text-align: center;">${r[5] || ''}</td>
-              <td>${r[6] || ''}</td>
-            </tr>`;
-          });
-          html += '</tbody></table>';
-        }
-        const changelogContainer = document.getElementById('changelog');
-        changelogContainer.innerHTML = html;
-      } catch (err) {
-        console.error('Error loading changelog:', err);
-        document.getElementById('changelog').innerText = 'Failed to load changelog.';
-      }
-    }
-
-    function filterByListType(type) {
+function filterByListType(type) {
   switch(type) {
     case 'main':
-      return levelsData.filter((l) => Number(l[1]) >= 1 && Number(l[1]) <= 75);
+      return levelsData.filter(l => Number(l[1]) >= 1 && Number(l[1]) <= 75);
     case 'extended':
-      return levelsData.filter((l) => Number(l[1]) >= 76 && Number(l[1]) <= 150);
+      return levelsData.filter(l => Number(l[1]) >= 76 && Number(l[1]) <= 150);
     case 'legacy':
-      return levelsData.filter((l) => Number(l[1]) >= 151);
+      return levelsData.filter(l => Number(l[1]) >= 151);
     case 'classicmode':
-      // Only levels where data[16] indicates classic mode
       return levelsData.filter(l => l[16] === true || l[16] === 'TRUE' || l[16] === 'true' || l[16] === 1);
     case 'platformermode':
-      // Only levels where data[17] indicates platformer mode
       return levelsData.filter(l => l[17] === true || l[17] === 'TRUE' || l[17] === 'true' || l[17] === 1);
     case 'highestattempts':
-      // Filter levels with valid attempt counts, sort descending by attempts (data[11])
       return levelsData
-        .filter(l => l[11] !== '' && l[11] !== 'N/A' && l[11] !== 'U' && l[11] !== undefined && l[11] !== null)
-        .sort((a, b) => Number(b[11]) - Number(a[11]));
+        .filter(l => isValidForSort(l[11]))
+        .sort((a,b)=>Number(b[11])-Number(a[11]));
     default:
       return sortLevels(levelsData, type);
   }
 }
 
+/* -------------------- Rendering -------------------- */
 
-    document.querySelectorAll('.tab').forEach((tab) => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
-        tab.classList.add('active');
-        const sortKey = tab.getAttribute('data-sort');
-        const levelsContainer = document.getElementById('levels');
-        const changelogContainer = document.getElementById('changelog');
+function renderLevels(levels) {
+  const container = document.getElementById('levels');
+  container.innerHTML = '';
 
-        if (sortKey === 'changelog') {
-          levelsContainer.style.display = 'none';
-          changelogContainer.style.display = 'block';
-          fetchChangelog();
-        } else {
-          changelogContainer.style.display = 'none';
-          levelsContainer.style.display = 'block';
-          const filteredByType = filterByListType(sortKey);
-        const searchQuery = document.getElementById('search-input').value.trim();
-        const finalFiltered = filterBySearch(filteredByType, searchQuery);
-        renderLevels(finalFiltered);
+  const activeTab = document.querySelector('.tab.active');
+  const sortKey = activeTab ? activeTab.getAttribute('data-sort') : 'rank';
 
-        }
-      });
+  const excludedLists = ['rank', 'main', 'extended', 'legacy', 'changelog'];
+  const isExcluded = excludedLists.includes(sortKey);
+
+  levels.forEach((level, index) => {
+    const levelDiv = buildLevelDiv(level, index + 1, isExcluded);
+    container.appendChild(levelDiv);
+  });
+}
+
+/* -------------------- Events -------------------- */
+
+document.getElementById('search-input').addEventListener('input', () => {
+  const activeTab = document.querySelector('.tab.active');
+  if (!activeTab) return;
+
+  const sortKey = activeTab.getAttribute('data-sort');
+  if (sortKey === 'changelog') return;
+
+  const filteredByType = filterByListType(sortKey);
+  const searchQuery = document.getElementById('search-input').value.trim();
+  const finalFiltered = filterBySearch(filteredByType, searchQuery);
+  renderLevels(finalFiltered);
+});
+
+document.querySelectorAll('.tab').forEach((tab) => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
+    tab.classList.add('active');
+
+    const sortKey = tab.getAttribute('data-sort');
+    const levelsContainer = document.getElementById('levels');
+    const changelogContainer = document.getElementById('changelog');
+
+    if (sortKey === 'changelog') {
+      levelsContainer.style.display = 'none';
+      changelogContainer.style.display = 'block';
+      fetchChangelog();
+    } else {
+      changelogContainer.style.display = 'none';
+      levelsContainer.style.display = 'block';
+
+      const filteredByType = filterByListType(sortKey);
+      const searchQuery = document.getElementById('search-input').value.trim();
+      const finalFiltered = filterBySearch(filteredByType, searchQuery);
+      renderLevels(finalFiltered);
+    }
+  });
+});
+
+/* -------------------- Fetch -------------------- */
+
+async function fetchChangelog() {
+  const sheetId = '1jyql2Wzlho2N6cU7Ja45bCXgmeT_CdQM2gddff8wfzM';
+  const sheetName = 'Changelog';
+  const query = encodeURIComponent('SELECT B,C,D,E,F,G,H OFFSET 1');
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}&tq=${query}`;
+
+  try {
+    const response = await fetch(url);
+    const text = await response.text();
+    const json = JSON.parse(text.substring(47).slice(0, -2));
+    const rows = json.table.rows.map(row =>
+      row.c.map(cell => (cell ? cell.v : ''))
+    );
+
+    const grouped = {};
+    rows.forEach(r => {
+      const date = r[0] || 'Unknown Date';
+      if (!grouped[date]) grouped[date] = [];
+      grouped[date].push(r);
     });
 
-    fetchLevels();
-  </script>
+    let html = '';
+    for (const date of Object.keys(grouped)) {
+      html += `<h3>${date}</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>POS.</th>
+              <th>NAME</th>
+              <th>CREATOR</th>
+              <th>Change</th>
+              <th>PGDDL</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>`;
+
+      grouped[date].forEach(r => {
+        html += `<tr>
+          <td>${r[1] || ''}</td>
+          <td>${r[2] || ''}</td>
+          <td>${r[3] || ''}</td>
+          <td>${r[4] || ''}</td>
+          <td>${r[5] || ''}</td>
+          <td>${r[6] || ''}</td>
+        </tr>`;
+      });
+
+      html += `</tbody></table>`;
+    }
+
+    document.getElementById('changelog').innerHTML = html;
+
+  } catch (err) {
+    console.error('Error loading changelog:', err);
+    document.getElementById('changelog').innerText = 'Failed to load changelog.';
+  }
+}
+
+
+async function fetchLevels() {
+  const sheetId = '1jyql2Wzlho2N6cU7Ja45bCXgmeT_CdQM2gddff8wfzM';
+  const sheetName = 'Sheet1';
+  const query = encodeURIComponent('SELECT * OFFSET 1');
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}&tq=${query}`;
+
+  try {
+    const response = await fetch(url);
+    const text = await response.text();
+    const json = JSON.parse(text.substring(47).slice(0, -2));
+    levelsData = json.table.rows.map(row => row.c.map(cell => (cell ? cell.v : '')));
+    renderLevels(sortLevels(levelsData, 'rank'));
+  } catch (e) {
+    console.error('Failed to fetch levels:', e);
+  }
+}
+
+fetchLevels();
+</script>
 </body>
 </html>
