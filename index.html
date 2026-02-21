@@ -162,10 +162,20 @@
       text-align: left;
     }
     #changelog td:nth-child(1),
-    #changelog td:nth-child(4),
-    #changelog td:nth-child(5) {
-      text-align: center;
-    }
+    #changelog td:nth-child(2),
+    #changelog td:nth-child(5),
+    #changelog th:nth-child(8),
+    #changelog th:nth-child(8),
+    #changelog td:nth-child(8) {
+    font-size: 11px;       
+    width: 250px;          
+    white-space: nowrap;    
+    overflow: hidden;        
+    text-overflow: ellipsis; 
+   }
+    #changelog td:nth-child(6) {
+    text-align: center;
+  }
   </style>
 </head>
 <body>
@@ -445,7 +455,7 @@ document.querySelectorAll('.tab').forEach((tab) => {
 async function fetchChangelog() {
   const sheetId = '1jyql2Wzlho2N6cU7Ja45bCXgmeT_CdQM2gddff8wfzM';
   const sheetName = 'Changelog';
-  const query = encodeURIComponent('SELECT B,C,D,E,F,G,H OFFSET 1');
+  const query = encodeURIComponent('SELECT B,C,D,E,F,G,H,I,J OFFSET 1');
   const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}&tq=${query}`;
 
   try {
@@ -470,10 +480,12 @@ async function fetchChangelog() {
           <thead>
             <tr>
               <th>POS.</th>
+              <th>Cur. POS.</th>
               <th>NAME</th>
               <th>CREATOR</th>
               <th>Change</th>
               <th>PGDDL</th>
+              <th>Enjoyment</th>
               <th>Notes</th>
             </tr>
           </thead>
@@ -481,12 +493,14 @@ async function fetchChangelog() {
 
       grouped[date].forEach(r => {
         html += `<tr>
-          <td>${r[1] || ''}</td>
-          <td>${r[2] || ''}</td>
-          <td>${r[3] || ''}</td>
-          <td>${r[4] || ''}</td>
-          <td>${r[5] || ''}</td>
-          <td>${r[6] || ''}</td>
+          <td>${r[1] || ''}</td>  <!-- POS -->
+          <td>${r[7] || ''}</td>  <!-- Cur. POS (I) -->
+          <td>${r[2] || ''}</td>  <!-- Name -->
+          <td>${r[3] || ''}</td>  <!-- Creator -->
+          <td>${r[4] || ''}</td>  <!-- Change -->
+          <td>${r[5] || ''}</td>  <!-- PGDDL -->
+          <td>${r[8] || ''}</td>  <!-- Enjoyment (J) -->
+          <td>${r[6] || ''}</td>  <!-- Notes -->
         </tr>`;
       });
 
